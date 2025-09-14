@@ -1,35 +1,43 @@
+// src/components/Task.jsx
+import React from "react";
+
 const Task = ({ task, onDone }) => {
   const handleDownload = () => {
-    if (task.file) {
-      const url = URL.createObjectURL(task.file);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${task.text || "task"}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+    if (!task.file) return;
+    const url = URL.createObjectURL(task.file);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(task.text || "task").slice(0, 40)}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="flex justify-between border p-2 items-center">
+    <div className="flex justify-between border w-full p-2 items-center">
       <div>
-        <h1>{task.text}</h1>
-        <p>{new Date(task.dueDate).toDateString()}</p>
+        <h1 className="font-medium">{task.text}</h1>
+        <div className="text-sm text-gray-600">{new Date(task.dueDate).toDateString()}</div>
         {task.file && (
           <button
             onClick={handleDownload}
-            className="text-sm text-blue-600 underline"
+            className="text-xs mt-1 underline text-blue-600"
+            type="button"
           >
             Download PDF
           </button>
         )}
       </div>
-      <button
-        onClick={() => onDone(task.id)}
-        className="bg-green-500 text-white px-2 py-1 rounded"
-      >
-        Done
-      </button>
+
+      <div className="flex items-center gap-3">
+        <div className="text-sm">{task.status}</div>
+        <button
+          onClick={() => onDone(task.id)}
+          className="bg-green-500 cursor-pointer text-white rounded-md p-1"
+          disabled={task.status === "done"}
+        >
+          {task.status === "done" ? "Done" : "Mark Done"}
+        </button>
+      </div>
     </div>
   );
 };
