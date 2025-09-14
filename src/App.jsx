@@ -1,23 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import Header from './components/Header'
-import InputCard from './components/InputCard'
-import TasksCard from './components/TasksCard'
+import { useState } from 'react';
+import './App.css';
+import Header from './components/Header';
+import InputCard from './components/InputCard';
+import TasksCard from './components/TasksCard';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // trigger re-fetch in TasksCard by incrementing the key
+  const handleTaskAdded = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   return (
-    <>
-      <main >
-        <Header />
-        <InputCard/>
-        <TasksCard/>
-      </main>
-    </>
-  )
+    <main>
+      <Header />
+      <InputCard onTaskAdded={handleTaskAdded} />
+      <TasksCard refreshKey={refreshKey} />
+    </main>
+  );
 }
 
-export default App
+export default App;

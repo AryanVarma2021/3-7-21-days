@@ -128,6 +128,7 @@ export async function createTask(task) {
     await tx.done; // wait for transaction to complete
 
     alert("Task Added Successfully");
+    
 
     return parentTask; // useful if caller wants to do something else
   } catch (error) {
