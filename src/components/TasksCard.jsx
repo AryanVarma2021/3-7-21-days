@@ -12,13 +12,19 @@ const TasksCard = ({ refreshKey }) => {
       setLoading(true);
       const all = await getAllChildTasks();
       // Filter only pending tasks and tasks whose dueDate <= now (review queue)
+      //console.log(all);
+      
       const nowISO = new Date().toISOString();
       const pendingDue = all.filter(
-        (t) => t.status === "pending" && (t.dueDate || "") <= nowISO
+        (t) => (t.status === "pending" )
       );
+      console.log(pendingDue);
+      
       // sort by dueDate ascending
       pendingDue.sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
       setTasks(pendingDue);
+      console.log(pendingDue);
+      
     } catch (err) {
       console.error("Error fetching tasks:", err);
       setTasks([]);

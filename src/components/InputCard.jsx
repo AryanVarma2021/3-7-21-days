@@ -14,7 +14,9 @@ const InputCard = ({ onTaskAdded }) => {
       return;
     }
 
-    await createTask({ text, file });
+    const res = await createTask({ text, file });
+    console.log(res);
+    
     setText("");
     setFile(null);
     onTaskAdded?.();
