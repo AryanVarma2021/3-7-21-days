@@ -1,26 +1,35 @@
-// src/components/Task.jsx
-import React from 'react';
-
 const Task = ({ task, onDone }) => {
-  return (
-    <div className="flex justify-between border w-full p-1 items-center">
-      <div>
-        <h1 className="font-medium">{task.text}</h1>
-        <div className="text-sm text-gray-600">{new Date(task.dueDate).toDateString()}</div>
-      </div>
+  const handleDownload = () => {
+    if (task.file) {
+      const url = URL.createObjectURL(task.file);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${task.text || "task"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
 
-      <div className="flex items-center gap-3">
-        <div className="text-sm">{task.status}</div>
-        <button
-          onClick={() => onDone(task.id)}
-          className="bg-green-500 cursor-pointer text-white rounded-md p-1"
-          disabled={task.status === 'done'}
-        >
-          {task.status === 'done' ? 'Done' : 'Mark Done'}
-        </button>
+  return (
+    <div className="flex justify-between border p-2 items-center">
+      <div>
+        <h1>{task.text}</h1>
+        <p>{new Date(task.dueDate).toDateString()}</p>
+        {task.file && (
+          <button
+            onClick={handleDownload}
+            className="text-sm text-blue-600 underline"
+          >
+            Download PDF
+          </button>
+        )}
       </div>
+      <button
+        onClick={() => onDone(task.id)}
+        className="bg-green-500 text-white px-2 py-1 rounded"
+      >
+        Done
+      </button>
     </div>
   );
 };
-
-export default Task;

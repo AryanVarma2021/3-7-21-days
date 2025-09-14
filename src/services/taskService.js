@@ -73,67 +73,39 @@ export async function completeTask(id) {
 
     
 }
-export async function createTask(task) {
-  try {
-    if (!task || !task.text || !task.text.trim()) {
-      alert("Please enter some text");
-      return;
-    }
+export async function createTask({ text, file }) {
+  const db = await initDB();
 
-    const ParentId = uuidv4();
-    const createdAt = nowISO();
+  const ParentId = uuidv4();
+  const createdAt = new Date().toISOString();
 
-    const parentTask = {
-      id: ParentId,
-      text: task.text.trim(),
-      createdAt,
-      user: null,        // or some user id later
-      isCompleted: false,
-      count: 0
-    };
+  const parentTask = {
+    id: ParentId,
+    text,
+    createdAt,
+    isCompleted: false,
+    count: 0,
+    file: file ? file : null   // store Blob if user uploaded
+  };
 
-    // compute due dates
-    const inDays = (d) => new Date(Date.now() + d * 24 * 60 * 60 * 1000).toISOString();
+  const inDays = (d) =>
+    new Date(Date.now() + d * 24 * 60 * 60 * 1000).toISOString();
 
-    const childTask1 = {
-      id: uuidv4(),
-        text : task.text.trim(), 
-      masterId: ParentId,
-      dueDate: inDays(3),
-      status: "pending"
-    };
-    const childTask2 = {
-      id: uuidv4(),
-      text : task.text.trim(), 
-      masterId: ParentId,
-      dueDate: inDays(7),
-      status: "pending"
-    };
-    const childTask3 = {
-      id: uuidv4(),
-      text : task.text.trim(), 
-      masterId: ParentId,
-      dueDate: inDays(21),
-      status: "pending"
-    };
+  const children = [3, 7, 21].map((days) => ({
+    id: uuidv4(),
+    masterId: ParentId,
+    dueDate: inDays(days),
+    status: "pending",
+    file: file ? file : null   // optional: store copy for each child
+  }));
 
-    const db = await getDB();
-
-    // Use a transaction to ensure atomic writes (either all succeed or none)
-    const tx = db.transaction([TASK_MASTERS, CHILD_TASKS], 'readwrite');
-    await tx.objectStore(TASK_MASTERS).add(parentTask);
-    await tx.objectStore(CHILD_TASKS).add(childTask1);
-    await tx.objectStore(CHILD_TASKS).add(childTask2);
-    await tx.objectStore(CHILD_TASKS).add(childTask3);
-    await tx.done; // wait for transaction to complete
-
-    alert("Task Added Successfully");
-    
-
-    return parentTask; // useful if caller wants to do something else
-  } catch (error) {
-    alert(error.message || "Error creating task");
-    console.error("Error creating task:", error);
-    throw error; // rethrow so caller can handle if needed
+  const tx = db.transaction([TASK_MASTERS, CHILD_TASKS], "readwrite");
+  await tx.objectStore(TASK_MASTERS).add(parentTask);
+  for (const c of children) {
+    await tx.objectStore(CHILD_TASKS).add(c);
   }
+  await tx.done;
+
+  return parentTask;
 }
+
