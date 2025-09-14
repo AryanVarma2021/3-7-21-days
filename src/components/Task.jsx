@@ -33,3 +33,5 @@ const Task = ({ task, onDone }) => {
     </div>
   );
 };
+
+export default Task;
