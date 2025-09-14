@@ -1,6 +1,6 @@
 // src/components/TasksCard.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import Task from "./Task.jsx"; // explicit extension avoids case/path issues on linux
+import Task from "./Task"; // explicit extension avoids case/path issues on linux
 import { getAllChildTasks, completeTask } from "../services/taskService";
 
 const TasksCard = ({ refreshKey }) => {
