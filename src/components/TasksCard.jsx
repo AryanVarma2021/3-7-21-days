@@ -1,6 +1,6 @@
 // src/components/TasksCard.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import Task from "./Task"; // explicit extension avoids case/path issues on linux
+import Task from "./Task";
 import { getAllChildTasks, completeTask } from "../services/taskService";
 
 const TasksCard = ({ refreshKey }) => {
@@ -11,20 +11,28 @@ const TasksCard = ({ refreshKey }) => {
     try {
       setLoading(true);
       const all = await getAllChildTasks();
-      // Filter only pending tasks and tasks whose dueDate <= now (review queue)
-      //console.log(all);
-      
-      const nowISO = new Date().toISOString();
-      const pendingDue = all.filter(
-        (t) => (t.status === "pending" )
-      );
-      console.log(pendingDue);
-      
-      // sort by dueDate ascending
-      pendingDue.sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
+
+      // compute limits
+      const now = Date.now();
+      const threeDaysLater = now + 3 * 24 * 60 * 60 * 1000;
+
+      // Keep only pending tasks whose dueDate is <= threeDaysLater
+      // (this includes overdue/past items as well)
+      const pendingDue = (all || []).filter((t) => {
+        if (t.status !== "pending") return false;
+        if (!t.dueDate) return false; // skip tasks without dueDate (change if you want them)
+        const dueTs = new Date(t.dueDate).getTime();
+        return !isNaN(dueTs) && dueTs <= threeDaysLater;
+      });
+
+      // sort by dueDate ascending (safely handle missing/invalid dates)
+      pendingDue.sort((a, b) => {
+        const at = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const bt = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        return at - bt;
+      });
+
       setTasks(pendingDue);
-      console.log(pendingDue);
-      
     } catch (err) {
       console.error("Error fetching tasks:", err);
       setTasks([]);
@@ -35,7 +43,6 @@ const TasksCard = ({ refreshKey }) => {
 
   useEffect(() => {
     fetchTasks();
-    // refresh when refreshKey changes (passed from App)
   }, [fetchTasks, refreshKey]);
 
   async function onDoneBtn(taskId) {

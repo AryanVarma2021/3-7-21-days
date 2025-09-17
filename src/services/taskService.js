@@ -96,6 +96,7 @@ export async function createTask({ text, file }) {
     masterId: ParentId,
     dueDate: inDays(days),
     status: "pending",
+    text : text, 
     file: file ? file : null   // optional: store copy for each child
   }));
 
